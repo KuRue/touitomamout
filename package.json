@@ -28,7 +28,7 @@
   "dependencies": {
     "@atproto/api": "^0.13.11",
     "@pm2/io": "^6.0.1",
-    "@the-convocation/twitter-scraper": "^0.14.1",
+    "@the-convocation/twitter-scraper": "^0.20.4",
     "@types/node": "^20.12.12",
     "cli-spinners": "^3.2.0",
     "dotenv": "^16.4.5",
