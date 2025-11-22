@@ -3,7 +3,7 @@ import { areBlobsEqual } from "./helpers/are-blobs-equals";
 import { getBlobSize } from "./helpers/get-blob-size";
 import { makeBlobFromFile } from "./helpers/make-blob-from-file";
 
-const MEDIA_MAX_SIZE_BYTES = 200000;
+const MEDIA_MAX_SIZE_BYTES = 250;
 vi.mock("../../../constants", () => ({
   DEBUG: false,
 }));
@@ -22,11 +22,8 @@ describe("compressMedia", () => {
 
   describe("when the media is larger than the max size", () => {
     it("returns a compressed version of the given media", async () => {
-      // 229,039 bytes image
-      const originalBlob = await makeBlobFromFile(
-        "image-large-jpg.jpg",
-        "image/jpg",
-      );
+      // 286 bytes image
+      const originalBlob = await makeBlobFromFile("image-jpg.jpg", "image/jpg");
       const compressedBlob = await compressMedia(
         originalBlob,
         MEDIA_MAX_SIZE_BYTES,
