@@ -29,4 +29,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: kureu02/touitomamout:latest
+          tags: kurue02/touitomamout:latest
