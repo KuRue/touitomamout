@@ -26,31 +26,40 @@ const toActionableLoginError = (err: unknown): Error => {
 
   if (/403\b|cloudflare|forbidden/i.test(message)) {
     return new Error(
-      TouitomamoutError("Touitomamout was unable to log in to Twitter/X (blocked by anti-bot protection)", [
-        `Original error: ${message}`,
-        "X is flagging this server IP (common on datacenter/Unraid hosts).",
-        "Fix: export cookies from a logged-in browser and set TWITTER_COOKIES=\"ct0=...; auth_token=...\" in your .env, then restart.",
-        "See https://github.com/the-convocation/twitter-scraper#cookie-based-authentication",
-      ]),
+      TouitomamoutError(
+        "Touitomamout was unable to log in to Twitter/X (blocked by anti-bot protection)",
+        [
+          `Original error: ${message}`,
+          "X is flagging this server IP (common on datacenter/Unraid hosts).",
+          'Fix: export cookies from a logged-in browser and set TWITTER_COOKIES="ct0=...; auth_token=..." in your .env, then restart.',
+          "See https://github.com/the-convocation/twitter-scraper#cookie-based-authentication",
+        ],
+      ),
     );
   }
 
   if (/399\b|incorrect|try again|suspicious|authenticate/i.test(message)) {
     return new Error(
-      TouitomamoutError("Touitomamout was unable to log in to Twitter/X (credentials rejected)", [
-        `Original error: ${message}`,
-        "Double-check TWITTER_USERNAME, TWITTER_PASSWORD (and TWITTER_EMAIL if X asks for verification).",
-        "If credentials are correct, X is blocking automated logins: use TWITTER_COOKIES from a logged-in browser instead.",
-      ]),
+      TouitomamoutError(
+        "Touitomamout was unable to log in to Twitter/X (credentials rejected)",
+        [
+          `Original error: ${message}`,
+          "Double-check TWITTER_USERNAME, TWITTER_PASSWORD (and TWITTER_EMAIL if X asks for verification).",
+          "If credentials are correct, X is blocking automated logins: use TWITTER_COOKIES from a logged-in browser instead.",
+        ],
+      ),
     );
   }
 
   if (/429\b|rate.?limit/i.test(message)) {
     return new Error(
-      TouitomamoutError("Touitomamout was rate-limited while logging in to Twitter/X", [
-        `Original error: ${message}`,
-        "Wait ~15 minutes and restart. Consider lowering sync frequency (SYNC_FREQUENCY_MIN).",
-      ]),
+      TouitomamoutError(
+        "Touitomamout was rate-limited while logging in to Twitter/X",
+        [
+          `Original error: ${message}`,
+          "Wait ~15 minutes and restart. Consider lowering sync frequency (SYNC_FREQUENCY_MIN).",
+        ],
+      ),
     );
   }
 

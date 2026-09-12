@@ -12,8 +12,7 @@ if (process.env.NODE_ENV !== "test") {
   if (!rawArg || rawArg.startsWith("$")) {
     rawArg = undefined;
   }
-  const envPath =
-    rawArg ?? process.env.ENV_FILE ?? join(process.cwd(), ".env");
+  const envPath = rawArg ?? process.env.ENV_FILE ?? join(process.cwd(), ".env");
   if (envPath.endsWith("example")) {
     throw new Error("You should not use the example configuration file.");
   }
@@ -49,9 +48,7 @@ export const TWITTER_USERNAME = trimTwitterHandle(
 );
 export const TWITTER_PASSWORD = (process.env.TWITTER_PASSWORD ?? "").trim();
 export const TWITTER_EMAIL = (process.env.TWITTER_EMAIL ?? "").trim();
-export const TWITTER_2FA_SECRET = (
-  process.env.TWITTER_2FA_SECRET ?? ""
-).trim();
+export const TWITTER_2FA_SECRET = (process.env.TWITTER_2FA_SECRET ?? "").trim();
 export const TWITTER_COOKIES = (process.env.TWITTER_COOKIES ?? "").trim();
 export const TWITTER_EXPERIMENTAL_X_CLIENT_TRANSACTION_ID =
   (process.env.TWITTER_EXPERIMENTAL_X_CLIENT_TRANSACTION_ID ?? "false") ===
