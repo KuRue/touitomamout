@@ -6,17 +6,35 @@ import dotenv from "dotenv";
 import buildInfo from "./buildInfo.json" assert { type: "json" };
 
 if (process.env.NODE_ENV !== "test") {
-  const envPath = process.argv[2] ?? join(process.cwd(), ".env");
+  let rawArg = process.argv[2];
+  // Docker CMD passes "$ENV_FILE" - if the variable was empty/unexpanded
+  // (e.g. Unraid template using direct env vars), ignore it.
+  if (!rawArg || rawArg.startsWith("$")) {
+    rawArg = undefined;
+  }
+  const envPath =
+    rawArg ?? process.env.ENV_FILE ?? join(process.cwd(), ".env");
   if (envPath.endsWith("example")) {
     throw new Error("You should not use the example configuration file.");
   }
 
   try {
     accessSync(envPath, constants.F_OK);
+    dotenv.config({ path: envPath });
   } catch (err) {
-    throw new Error("No suitable .env file found.");
+    // Allow Unraid-style setups where variables are injected directly
+    // as container env vars instead of mounting a .env file.
+    if (process.env.TWITTER_HANDLE) {
+      dotenv.config({ path: envPath });
+      console.warn(
+        `[touitomamout] No .env file found at '${envPath}', using container environment variables instead.`,
+      );
+    } else {
+      throw new Error(
+        `No suitable .env file found (tried '${envPath}'). Mount your .env at /data/.env (ENV_FILE=/data/.env) or set env vars directly.`,
+      );
+    }
   }
-  dotenv.config({ path: envPath });
 }
 
 const trimTwitterHandle = (handle: string) => {
@@ -30,6 +48,16 @@ export const TWITTER_USERNAME = trimTwitterHandle(
   process.env.TWITTER_USERNAME ?? "",
 );
 export const TWITTER_PASSWORD = (process.env.TWITTER_PASSWORD ?? "").trim();
+export const TWITTER_EMAIL = (process.env.TWITTER_EMAIL ?? "").trim();
+export const TWITTER_2FA_SECRET = (
+  process.env.TWITTER_2FA_SECRET ?? ""
+).trim();
+export const TWITTER_COOKIES = (process.env.TWITTER_COOKIES ?? "").trim();
+export const TWITTER_EXPERIMENTAL_X_CLIENT_TRANSACTION_ID =
+  (process.env.TWITTER_EXPERIMENTAL_X_CLIENT_TRANSACTION_ID ?? "false") ===
+  "true";
+export const TWITTER_EXPERIMENTAL_XPFF =
+  (process.env.TWITTER_EXPERIMENTAL_XPFF ?? "false") === "true";
 export const MASTODON_INSTANCE = (process.env.MASTODON_INSTANCE ?? "").trim();
 export const MASTODON_ACCESS_TOKEN = (
   process.env.MASTODON_ACCESS_TOKEN ?? ""

@@ -12,6 +12,9 @@ const { mockedConstants } = vi.hoisted(() => ({
   mockedConstants: {
     TWITTER_USERNAME: "",
     TWITTER_PASSWORD: "",
+    TWITTER_EMAIL: "",
+    TWITTER_2FA_SECRET: "",
+    TWITTER_COOKIES: "",
   },
 }));
 
@@ -27,11 +30,13 @@ const restorePreviousSessionSpy = restorePreviousSession as Mock;
 const isLoggedInSpy = vi.fn();
 const loginSpy = vi.fn();
 const getCookiesSpy = vi.fn();
+const setCookiesSpy = vi.fn();
 
 const twitterClient = {
   isLoggedIn: isLoggedInSpy,
   login: loginSpy,
   getCookies: getCookiesSpy,
+  setCookies: setCookiesSpy,
 } as unknown as Scraper;
 
 describe("handleTwitterAuth", () => {
@@ -43,6 +48,9 @@ describe("handleTwitterAuth", () => {
     beforeEach(() => {
       mockedConstants.TWITTER_USERNAME = "";
       mockedConstants.TWITTER_PASSWORD = "";
+      mockedConstants.TWITTER_EMAIL = "";
+      mockedConstants.TWITTER_2FA_SECRET = "";
+      mockedConstants.TWITTER_COOKIES = "";
     });
 
     it("should not log in", async () => {
@@ -58,11 +66,15 @@ describe("handleTwitterAuth", () => {
     beforeEach(() => {
       mockedConstants.TWITTER_USERNAME = "username";
       mockedConstants.TWITTER_PASSWORD = "password";
+      mockedConstants.TWITTER_EMAIL = "";
+      mockedConstants.TWITTER_2FA_SECRET = "";
+      mockedConstants.TWITTER_COOKIES = "";
     });
 
     describe("when cookies are set", () => {
       beforeEach(() => {
         getCookiesSpy.mockResolvedValue(["cookies"]);
+        isLoggedInSpy.mockResolvedValue(true);
       });
 
       it("should restore the previous session", async () => {
@@ -74,16 +86,25 @@ describe("handleTwitterAuth", () => {
 
     describe("when cookies are not set", () => {
       beforeEach(() => {
-        getCookiesSpy.mockResolvedValue(undefined);
+        getCookiesSpy.mockResolvedValue(["cookies"]);
+        isLoggedInSpy
+          .mockResolvedValueOnce(false)
+          .mockResolvedValueOnce(true)
+          .mockResolvedValue(true);
       });
 
       it("should login", async () => {
         await handleTwitterAuth(twitterClient);
 
         expect(restorePreviousSessionSpy).toHaveBeenCalledTimes(1);
-        expect(isLoggedInSpy).toHaveBeenCalledTimes(2);
+        expect(isLoggedInSpy).toHaveBeenCalledTimes(3);
         expect(loginSpy).toHaveBeenCalledTimes(1);
-        expect(loginSpy).toHaveBeenCalledWith("username", "password");
+        expect(loginSpy).toHaveBeenCalledWith(
+          "username",
+          "password",
+          undefined,
+          undefined,
+        );
       });
     });
   });

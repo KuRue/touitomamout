@@ -32,7 +32,20 @@ export const profileSynchronizerService = async (
   }).start();
   log.text = "parsing";
 
-  const profile = await twitterClient.getProfile(TWITTER_HANDLE);
+  let profile;
+  try {
+    profile = await twitterClient.getProfile(TWITTER_HANDLE);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.warn(
+      `skipping profile sync (X API error, posts sync will continue): ${message}`,
+    );
+    return {
+      twitterClient,
+      mastodonClient,
+      blueskyClient,
+    };
+  }
 
   // Get profile images
   log.text = `avatar: ↓ downloading`;

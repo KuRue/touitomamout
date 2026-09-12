@@ -1,9 +1,9 @@
 version: '3.9'
 
 services:
-    touitomamout:
+  touitomamout:
     container_name: "touitomamout"
-     image: kurue02/touitomamout:latest
+    image: kurue02/touitomamout:latest
     restart: unless-stopped
     environment:
       - ENV_FILE=/data/.env

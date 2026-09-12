@@ -24,6 +24,26 @@ const pullContentStats = (tweets: Tweet[], title: string) => {
   );
 };
 
+const toActionableFetchError = (err: unknown): string => {
+  const message = err instanceof Error ? err.message : String(err);
+  if (/404\b|SearchTimeline|query.?id/i.test(message)) {
+    return (
+      `X API returned 404 (endpoint changed). Update @the-convocation/twitter-scraper to the latest version. ` +
+      `Original error: ${message}`
+    );
+  }
+  if (/401\b|403\b|authenticated|login|auth/i.test(message)) {
+    return (
+      `X API rejected the request (auth). Session may have expired; restart to re-login or set TWITTER_COOKIES. ` +
+      `Original error: ${message}`
+    );
+  }
+  if (/429\b|rate.?limit/i.test(message)) {
+    return `X rate limit hit. Will retry on next run. Original error: ${message}`;
+  }
+  return message;
+};
+
 export const tweetsGetterService = async (
   twitterClient: Scraper,
 ): Promise<Tweet[]> => {
@@ -48,22 +68,27 @@ export const tweetsGetterService = async (
     LATEST_TWEETS_COUNT,
   );
 
-  for await (const latestTweet of latestTweets) {
-    log.text = "post: → checking for synchronization needs";
-    if (!preventPostsSynchronization) {
-      // Only consider eligible tweets.
-      const tweet = await getEligibleTweet(tweetFormatter(latestTweet));
+  try {
+    for await (const latestTweet of latestTweets) {
+      log.text = "post: → checking for synchronization needs";
+      if (!preventPostsSynchronization) {
+        // Only consider eligible tweets.
+        const tweet = await getEligibleTweet(tweetFormatter(latestTweet));
 
-      if (tweet) {
-        // If the latest eligible tweet is cached, mark sync as unneeded.
-        if (isTweetCached(tweet, cachedPosts)) {
-          preventPostsSynchronization = true;
+        if (tweet) {
+          // If the latest eligible tweet is cached, mark sync as unneeded.
+          if (isTweetCached(tweet, cachedPosts)) {
+            preventPostsSynchronization = true;
+          }
+          // If the latest tweet is not cached,
+          // skip the current optimization and go to synchronization step.
+          break;
         }
-        // If the latest tweet is not cached,
-        // skip the current optimization and go to synchronization step.
-        break;
       }
     }
+  } catch (err) {
+    log.warn(`skipping sync check: ${toActionableFetchError(err)}`);
+    return [];
   }
 
   // Get tweets from API
@@ -76,26 +101,31 @@ export const tweetsGetterService = async (
 
     let hasRateLimitReached = false;
     let tweetIndex = 0;
-    for await (const tweet of tweetsIds) {
-      tweetIndex++;
-      oraProgress(log, { before: "post: → filtering" }, tweetIndex, 200);
+    try {
+      for await (const tweet of tweetsIds) {
+        tweetIndex++;
+        oraProgress(log, { before: "post: → filtering" }, tweetIndex, 200);
 
-      const rateLimitTimeout = setTimeout(
-        () => (hasRateLimitReached = true),
-        1000 * API_RATE_LIMIT,
-      );
+        const rateLimitTimeout = setTimeout(
+          () => (hasRateLimitReached = true),
+          1000 * API_RATE_LIMIT,
+        );
 
-      if (hasRateLimitReached || isTweetCached(tweet, cachedPosts)) {
-        continue;
+        if (hasRateLimitReached || isTweetCached(tweet, cachedPosts)) {
+          continue;
+        }
+
+        const t: Tweet = tweetFormatter(tweet);
+
+        const eligibleTweet = await getEligibleTweet(t);
+        if (eligibleTweet) {
+          tweets.unshift(eligibleTweet);
+        }
+        clearTimeout(rateLimitTimeout);
       }
-
-      const t: Tweet = tweetFormatter(tweet);
-
-      const eligibleTweet = await getEligibleTweet(t);
-      if (eligibleTweet) {
-        tweets.unshift(eligibleTweet);
-      }
-      clearTimeout(rateLimitTimeout);
+    } catch (err) {
+      log.warn(`stopping tweet fetch: ${toActionableFetchError(err)}`);
+      return tweets;
     }
 
     if (hasRateLimitReached) {

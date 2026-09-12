@@ -17,6 +17,8 @@ import {
   SYNC_DRY_RUN,
   SYNC_MASTODON,
   TOUITOMAMOUT_VERSION,
+  TWITTER_EXPERIMENTAL_X_CLIENT_TRANSACTION_ID,
+  TWITTER_EXPERIMENTAL_XPFF,
   TWITTER_HANDLE,
 } from "../constants";
 import { handleTwitterAuth } from "../helpers/auth/handle-twitter-auth";
@@ -79,7 +81,12 @@ export const configuration = async (): Promise<{
   });
   synchronizedHandle.set(`@${TWITTER_HANDLE}`);
 
-  const twitterClient = new Scraper();
+  const twitterClient = new Scraper({
+    experimental: {
+      xClientTransactionId: TWITTER_EXPERIMENTAL_X_CLIENT_TRANSACTION_ID,
+      xpff: TWITTER_EXPERIMENTAL_XPFF,
+    },
+  });
 
   await handleTwitterAuth(twitterClient);
 
