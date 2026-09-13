@@ -67,8 +67,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Log in to the GitHub Container Registry
         uses: docker/login-action@v3
@@ -82,8 +82,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ github.repository }}
-            ghcr.io/${{ github.repository }}
+            kurue02/touitomamout
+            ghcr.io/kurue/touitomamout
           tags: |
             type=raw,value=latest
             type=semver,pattern={{version}},value=${{needs.create-tag.outputs.version}}

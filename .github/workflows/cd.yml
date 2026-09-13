@@ -47,7 +47,7 @@ jobs:
           push: true
           tags: |
             kurue02/touitomamout:dev
-            ghcr.io/${{ github.repository }}:dev
+            ghcr.io/kurue/touitomamout:dev
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64,
 
