@@ -130,7 +130,12 @@ export const tweetsGetterService = async (
       }
     } catch (err) {
       log.warn(`stopping tweet fetch: ${toActionableFetchError(err)}`);
-      return tweets;
+      const postsToSync =
+        SYNC_MAX_POSTS_PER_RUN > 0
+          ? tweets.slice(0, SYNC_MAX_POSTS_PER_RUN)
+          : tweets;
+      log.succeed(pullContentStats(postsToSync, "tweets"));
+      return postsToSync;
     }
 
     if (hasRateLimitReached) {
