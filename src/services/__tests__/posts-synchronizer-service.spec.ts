@@ -13,6 +13,9 @@ vi.mock("../../constants", () => ({
   DEBUG: false,
   API_RATE_LIMIT: 1,
   SYNC_DRY_RUN: false,
+  SYNC_FETCH_COUNT: 200,
+  SYNC_MAX_POSTS_PER_RUN: 0,
+  SYNC_LOOKBACK_DAYS: 21,
 }));
 
 vi.mock("../../helpers/cache/get-cached-posts", () => {
