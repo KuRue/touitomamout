@@ -1,7 +1,12 @@
 import { Scraper, Tweet } from "@the-convocation/twitter-scraper";
 import ora from "ora";
 
-import { API_RATE_LIMIT, TWITTER_HANDLE } from "../constants";
+import {
+  API_RATE_LIMIT,
+  SYNC_FETCH_COUNT,
+  SYNC_MAX_POSTS_PER_RUN,
+  TWITTER_HANDLE,
+} from "../constants";
 import { getCachedPosts } from "../helpers/cache/get-cached-posts";
 import { oraPrefixer, oraProgress } from "../helpers/logs";
 import { isTweetCached, tweetFormatter } from "../helpers/tweet";
@@ -97,7 +102,7 @@ export const tweetsGetterService = async (
   if (preventPostsSynchronization) {
     log.succeed("task finished (unneeded sync)");
   } else {
-    const tweetsIds = twitterClient.getTweets(TWITTER_HANDLE, 200);
+    const tweetsIds = twitterClient.getTweets(TWITTER_HANDLE, SYNC_FETCH_COUNT);
 
     let hasRateLimitReached = false;
     let tweetIndex = 0;
@@ -134,8 +139,18 @@ export const tweetsGetterService = async (
       );
     }
 
-    log.succeed(pullContentStats(tweets, "tweets"));
+    const postsToSync =
+      SYNC_MAX_POSTS_PER_RUN > 0
+        ? tweets.slice(0, SYNC_MAX_POSTS_PER_RUN)
+        : tweets;
+    if (postsToSync.length < tweets.length) {
+      log.succeed(
+        `batch limited to ${postsToSync.length} of ${tweets.length} eligible posts`,
+      );
+    }
+    log.succeed(pullContentStats(postsToSync, "tweets"));
     log.succeed("task finished");
+    return postsToSync;
   }
 
   return tweets;

@@ -76,6 +76,13 @@ export const BACKDATE_BLUESKY_POSTS =
 export const SYNC_FREQUENCY_MIN = parseInt(
   process.env.SYNC_FREQUENCY_MIN ?? "30",
 );
+export const SYNC_LOOKBACK_DAYS = parseInt(
+  process.env.SYNC_LOOKBACK_DAYS ?? "21",
+);
+export const SYNC_FETCH_COUNT = parseInt(process.env.SYNC_FETCH_COUNT ?? "200");
+export const SYNC_MAX_POSTS_PER_RUN = parseInt(
+  process.env.SYNC_MAX_POSTS_PER_RUN ?? "0",
+);
 export const SYNC_PROFILE_DESCRIPTION =
   (process.env.SYNC_PROFILE_DESCRIPTION ?? "false") === "true";
 export const SYNC_PROFILE_PICTURE =

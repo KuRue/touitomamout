@@ -2,6 +2,8 @@ import { Tweet } from "@the-convocation/twitter-scraper";
 
 import { keepRecentTweets } from "../keep-recent-tweets";
 
+vi.mock("../../../constants", () => ({ SYNC_LOOKBACK_DAYS: 21 }));
+
 describe("keepRecentTweets", () => {
   describe("when the tweet is recent", () => {
     it("should return true", () => {
