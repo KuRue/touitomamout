@@ -7,6 +7,7 @@ export const keepSelfReplies = async (tweet: Tweet) => {
     return tweet.inReplyToStatus.username === TWITTER_HANDLE;
   }
 
-  // True by default so chained conditions works
-  return true;
+  // A missing parent does not make a reply an original post. Only keep
+  // replies when the parent above confirms they are to our own account.
+  return !tweet.isReply && !tweet.inReplyToStatusId;
 };

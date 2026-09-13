@@ -10,6 +10,19 @@ vi.mock("../../../constants", () => {
 
 describe("keepSelfReplies", () => {
   describe("when the tweet is a reply", () => {
+    it.each([
+      { isReply: true },
+      { inReplyToStatusId: "123" },
+      { isReply: false, inReplyToStatusId: "123" },
+      { isReply: true, inReplyToStatusId: "123" },
+      { isReply: true, inReplyToStatus: {} },
+    ])(
+      "should reject replies with an unknown parent author: %j",
+      async (tweet) => {
+        expect(await keepSelfReplies(tweet as Tweet)).toBe(false);
+      },
+    );
+
     it("should return true when is to the same user", async () => {
       const result = await keepSelfReplies({
         inReplyToStatus: { username: "username" },
